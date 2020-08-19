@@ -1,57 +1,140 @@
-<div class="container" style="margin-top:20px;" ng-controller="homeController">
-    <div class="row clearfix">
-        <div class="col-md-12 column">
-            <div class="header" style="display: flex;justify-items: center;align-items: center;">
-                <h1 style="width: 50%"> Welcome {{userProfile.name}} </h1>
-                <button  style="height:40px;"class="btn btn-primary" ng-click="logout()">Log Out</button>
-            </div>
-        </div>
+<div class="container" style="margin-top: 20px;" ng-controller="homeController">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div
+        class="header"
+        style="display: flex; justify-items: center; align-items: center;"
+      >
+        <h1 style="width: 90%;">Welcome {{userProfile.name}}</h1>
+        <button
+          style="height: 40px;"
+          class="btn btn-primary"
+          ng-click="logout()"
+        >
+          Log Out
+        </button>
+      </div>
     </div>
-    <div class="row clearfix" style="margin-bottom:10px;">
-        <div class="controls form-inline form-group">
-            <div class="col-md-2">
-                <input id="fname" name="fname" placeholder="First Name" ng-model="fname"
-                       type="text" class="form-control input-small">
-            </div>
-            <div class="col-md-2">
-                <input id="lname" name="lname" placeholder="Last Name" ng-model="lname"
-                       type="text" class="form-control input-small">
-            </div>
-            <div class="col-md-2">
-                <input id="Status" name="Status" placeholder="Status" ng-model="status"
-                       type="text" class="form-control input-small">
-            </div>
-            <div class="col-md-2">
-                <input id="mobile" type="tel" name="mobile" placeholder="Mobile" ng-model="mbl"
-                       type="text" class="form-control input-small">
-            </div>
-            <div class="col-md-2">
-                <button ng-click="addRecord()" id="btnAdd" name="btnAdd" class="btn btn-danger">Add</button>
-            </div>
-        </div>
+  </div>
+  <div class="row clearfix" style="margin-bottom: 10px;">
+    <h3>Add a new column:</h3>
+    <div class="col-md-2">
+      <input
+        id="column"
+        name="column"
+        placeholder="Add column"
+        ng-model="column"
+        type="text"
+        class="form-control input-small"
+      />
+      <button
+        style="height: 40px;"
+        class="btn btn-primary"
+        ng-click="addColumn()"
+      >
+        Add Column
+      </button>
     </div>
-    <div class="row clearfix">
-        <table class="table table-bordered table-hover table-condensed">
-            <thead>
-                <tr>
-                    <th> Id </th>
-                    <th> First Name </th>
-                    <th> Last Name </th>
-                    <th> Status </th>
-                    <th> Mobile </th>
-                    <th> </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat="item in dataset" ng-if="dataset.length > 0">
-                    <td> {{item.id}} </td>
-                    <td> {{item.fname}} </td>
-                    <td> {{item.lname}} </td>
-                    <td ng-Class="{pass: item.status.toLowerCase() === 'pass', fail: item.status.toLowerCase() === 'failed' }"> {{item.status}} </td>
-                    <td> {{item.mobile}} </td>
-                    <td> <span title="delete this record" class="glyphicon glyphicon-trash text-danger" style="cursor:pointer" ng-click="delRecord(item.id)"></span> </td>
-                </tr>
-            </tbody>
-        </table>
+  </div>
+  <div class="row clearfix" style="margin-bottom: 10px;">
+    <h3>Add a new row:</h3>
+    <div class="controls form-inline form-group">
+      <div ng-repeat="column in columns" class="col-md-2">
+        <input
+          id="{{column}}"
+          name="{{column}}"
+          placeholder="Enter {{column}}"
+          ng-model="Answers[column]"
+          type="text"
+          class="form-control input-small"
+        />
+      </div>
     </div>
+    <div class="col-md-2">
+      <button
+        ng-click="addRecord()"
+        id="btnAdd"
+        name="btnAdd"
+        class="btn btn-danger"
+      >
+        Add
+      </button>
+    </div>
+  </div>
+  <div class="row clearfix">
+    <h3>Filter By:</h3>
+    <div ng-repeat="column in columns" class="col-md-2">
+      <label>{{column}} Only</label>
+      <input
+        id="{{column}}"
+        name="{{column}}"
+        placeholder="Enter {{column}}"
+        ng-model="Filters[column]"
+        type="text"
+        class="form-control input-small"
+      />
+    </div>
+  </div>
+  <div class="row clearfix">
+    <table class="table table-bordered table-hover table-condensed">
+      <thead>
+        <tr ng-if="columns.length > 0">
+          <th ng-repeat="column in columns">{{column}}</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          ng-repeat="item in dataset| filter:Filters:strict"
+          ng-if="dataset.length > 0"
+        >
+          <td
+            ng-class="{pass: column === 'status' && item[column].toLowerCase()=== 'pass', fail: column === 'status' && item[column].toLowerCase() === 'fail'}"
+            ng-repeat="column in columns"
+            ng-if="columns.length > 0 && !updateRecord"
+          >
+            {{item[column]}}
+          </td>
+          <td
+            ng-class="{pass: column === 'status' && item[column].toLowerCase()=== 'pass', fail: column === 'status' && item[column].toLowerCase() === 'fail'}"
+            ng-repeat="column in columns"
+            ng-if="columns.length > 0 && updateRecord"
+          >
+            <input
+              id="{{column}}"
+              name="{{column}}"
+              placeholder="Enter {{column}}"
+              value="{{item[column]}}"
+              ng-model="UpdatedRecord[column]"
+              type="text"
+              class="form-control input-small"
+            />
+          </td>
+          <td>
+            <span
+              title="delete this record"
+              class="glyphicon glyphicon-edit text-danger"
+              style="cursor: pointer;"
+              ng-click="updRecord(item.id)"
+              ng-if="!updateRecord"
+            ></span>
+            <span
+              title="delete this record"
+              class="glyphicon glyphicon-trash text-danger"
+              style="cursor: pointer;"
+              ng-click="delRecord(item.id)"
+              ng-if="!updateRecord"
+            ></span>
+            <span
+            title="delete this record"
+            class="glyphicon glyphicon-ok text-danger"
+            style="cursor: pointer;"
+            ng-click="updRecord(item.id)"
+            ng-if="updateRecord"
+          ></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

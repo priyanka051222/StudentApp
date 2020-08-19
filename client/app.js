@@ -38,6 +38,10 @@ const myApp = angular
       //page.setPage("Login", "login-layout");
       $scope.user = {};
       $scope.invalidLogin = false;
+      $scope.showLogin = false;
+      $scope.toggleLogin = function () {
+        $scope.showLogin =  !$scope.showLogin;
+      }
       $scope.getAllRec = function () {
         $http({ method: "GET", url: "/db/readRecords" }).then(
           function (data, status) {
@@ -81,6 +85,28 @@ const myApp = angular
       };
     },
   ])
+  .directive("dynamicModel", [
+    "$compile",
+    function ($compile) {
+      return {
+        link: function (scope, element, attrs) {
+          scope.$watch(attrs.dynamicModel, function (dynamicModel) {
+            if (attrs.ngModel == dynamicModel || !dynamicModel) return;
+
+            element.attr("ng-model", dynamicModel);
+            if (dynamicModel == "") {
+              element.removeAttr("ng-model");
+            }
+
+            // Unbind all previous event handlers, this is
+            // necessary to remove previously linked models.
+            element.unbind();
+            $compile(element)(scope);
+          });
+        },
+      };
+    },
+  ])
   .controller("homeController", [
     "$scope",
     "$http",
@@ -88,11 +114,10 @@ const myApp = angular
     "$location",
     function ($scope, $http, UserProfile, $location) {
       $scope.val1 = "This is temp Val";
-      $scope.fname = "";
-      $scope.lname = "";
-      $scope.status = "";
-      $scope.mbl = "";
-      $scope.rollNo = "";
+      $scope.Answers = {};
+      $scope.Filters = {};
+      $scope.UpdatedRecord = {};
+      $scope.updateRecord = false;
 
       UserProfile.then(function (userProfile) {
         return userProfile.$refresh();
@@ -105,14 +130,20 @@ const myApp = angular
       });
 
       $scope.getAllRec = function () {
-        $http({ method: "GET", url: "/db/readRecords" }).then(
-          function (data, status) {
-            $scope.dataset = data.data;
-          },
-          function (data, status) {
-            $scope.dataset = data.data || "Request failed ";
-          }
-        );
+        $http({ method: "GET", url: "/db/getColumns" }).then(function (
+          data,
+          status
+        ) {
+          $scope.columns = data.data[0].columnnames.split(", ");
+          $http({ method: "GET", url: "/db/readRecords" }).then(
+            function (data, status) {
+              $scope.dataset = data.data;
+            },
+            function (data, status) {
+              $scope.dataset = data.data || "Request failed ";
+            }
+          );
+        });
       };
 
       $scope.logout = function () {
@@ -123,26 +154,58 @@ const myApp = angular
         });
       };
 
-      $scope.addRecord = function () {
+      $scope.addColumn = function () {
         $http({
           method: "GET",
           url:
-            "/db/addRecord?fname=" +
-            $scope.fname +
-            "&lname=" +
-            $scope.lname +
-            "&status=" +
-            $scope.status +
-            "&mbl=" +
-            $scope.mbl +
-            "&rollNo=" +
-            $scope.rollNo,
+            "/db/addColumn?columns=" +
+            $scope.columns.join(", ") +
+            "&column=" +
+            $scope.column,
         }).then(function (data, status) {
+          $scope.getAllRec();
+        });
+      };
+
+      $scope.getModelName = function (column) {
+        return column;
+      };
+
+      function jsonToQueryString(json) {
+        return (
+          "?" +
+          Object.keys(json)
+            .map(function (key) {
+              return (
+                encodeURIComponent(key) + "=" + encodeURIComponent(json[key])
+              );
+            })
+            .join("&")
+        );
+      }
+      $scope.addRecord = function () {
+        const params = jsonToQueryString($scope.Answers);
+        $http({
+          method: "GET",
+          url: "/db/addRecord" + params,
+        }).then(function () {
           alert("Record Added");
           $scope.getAllRec();
         });
       };
 
+      $scope.updRecord = function (recId) {
+        $scope.updateRecord = !$scope.updateRecord;
+        if(!$scope.updateRecord) {
+          const params = jsonToQueryString($scope.UpdatedRecord);
+          $http({
+            method: "GET",
+            url: "/db/updateRecord" + params+'&id='+recId,
+          }).then(function () {
+            alert('Record updated');
+          });
+        }
+      }
       $scope.delRecord = function (recId) {
         console.log(recId);
         if (confirm("Are you sure you want to delete this record ? ")) {
