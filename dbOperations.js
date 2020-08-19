@@ -6,7 +6,7 @@ module.exports = {
 
     var conString =
       process.env.DATABASE_URL ||
-      "postgres://postgres:Gspann123@localhost:5432/test";
+      "postgres://postgres:yourpassword@localhost:5432/test";
     var client = new pg.Client(conString);
 
     client.connect();
@@ -24,7 +24,7 @@ module.exports = {
 
     var conString =
       process.env.DATABASE_URL ||
-      "postgres://postgres:Gspann123@localhost:5432/test";
+      "postgres://postgres:yourpassword@localhost:5432/test";
     var client = new pg.Client(conString);
 
     client.connect();
@@ -53,7 +53,7 @@ module.exports = {
 
     var conString =
       process.env.DATABASE_URL ||
-      "postgres://postgres:Gspann123@localhost:5432/test";
+      "postgres://postgres:yourpassword@localhost:5432/test";
     var client = new pg.Client(conString);
 
     client.connect();
@@ -72,7 +72,7 @@ module.exports = {
 
     var conString =
       process.env.DATABASE_URL ||
-      "postgres://postgres:Gspann123@localhost:5432/test";
+      "postgres://postgres:yourpassword@localhost:5432/test";
     var client = new pg.Client(conString);
 
     client.connect();
@@ -100,7 +100,7 @@ module.exports = {
 
     var conString =
       process.env.DATABASE_URL ||
-      "postgres://postgres:Gspann123@localhost:5432/test";
+      "postgres://postgres:yourpassword@localhost:5432/test";
     var client = new pg.Client(conString);
 
     client.connect();
