@@ -1,5 +1,5 @@
 const myApp = angular
-  .module("myApp", ["ngRoute"])
+  .module("myApp", ["ngRoute", "angularUtils.directives.dirPagination"])
   .config([
     "$routeProvider",
     "$locationProvider",
@@ -36,14 +36,16 @@ const myApp = angular
     "UserProfile",
     function ($scope, $location, Auth, $http, UserProfile) {
       //page.setPage("Login", "login-layout");
+    
       $scope.user = {};
       $scope.invalidLogin = false;
       $scope.showLogin = false;
       $scope.toggleLogin = function () {
         $scope.showLogin =  !$scope.showLogin;
       }
+      
       $scope.getAllRec = function () {
-        $http({ method: "GET", url: "/db/readRecords" }).then(
+        $http({ method: "GET", url: "/db/readRecords?column="+$scope.sortKey }).then(
           function (data, status) {
             $scope.dataset = data.data;
           },
@@ -117,7 +119,8 @@ const myApp = angular
       $scope.Answers = {};
       $scope.Filters = {};
       $scope.UpdatedRecord = {};
-      $scope.updateRecord = false;
+      $scope.updateRecord = '';
+      $scope.reverse = false;
 
       UserProfile.then(function (userProfile) {
         return userProfile.$refresh();
@@ -128,6 +131,7 @@ const myApp = angular
         $scope.userProfile = userProfile;
         $scope.getAllRec();
       });
+      $scope.sortKey = 'id'
 
       $scope.getAllRec = function () {
         $http({ method: "GET", url: "/db/getColumns" }).then(function (
@@ -135,7 +139,7 @@ const myApp = angular
           status
         ) {
           $scope.columns = data.data[0].columnnames.split(", ");
-          $http({ method: "GET", url: "/db/readRecords" }).then(
+          $http({ method: "GET", url: "/db/readRecords?column="+$scope.sortKey }).then(
             function (data, status) {
               $scope.dataset = data.data;
             },
@@ -161,7 +165,7 @@ const myApp = angular
             "/db/addColumn?columns=" +
             $scope.columns.join(", ") +
             "&column=" +
-            $scope.column,
+            $scope.column.toLowerCase(),
         }).then(function (data, status) {
           $scope.getAllRec();
         });
@@ -194,18 +198,32 @@ const myApp = angular
         });
       };
 
-      $scope.updRecord = function (recId) {
-        $scope.updateRecord = !$scope.updateRecord;
-        if(!$scope.updateRecord) {
+      $scope.sort = function(keyname){
+        $scope.sortKey = keyname;   //set the sortKey to the param passed
+        $scope.reverse = !$scope.reverse; //if true make it false and vice versa
+    }
+    
+    $scope.showUpdatingRecord = function (recId, record) {
+      $scope.updateRecord = recId;
+      for(i in $scope.columns) {
+       $scope.UpdatedRecord[$scope.columns[i]]= record[$scope.columns[i]];
+      }
+    }
+
+    $scope.updRecord = function (recId) {
+        if(recId ==  $scope.updateRecord){
           const params = jsonToQueryString($scope.UpdatedRecord);
           $http({
             method: "GET",
             url: "/db/updateRecord" + params+'&id='+recId,
           }).then(function () {
             alert('Record updated');
+            $scope.getAllRec();
+            $scope.updateRecord = '';
           });
-        }
       }
+    }
+
       $scope.delRecord = function (recId) {
         console.log(recId);
         if (confirm("Are you sure you want to delete this record ? ")) {

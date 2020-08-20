@@ -31,7 +31,7 @@ module.exports = {
 
     client.connect();
 
-    client.query("select * from student").then(function (result) {
+    client.query("select * from student ORDER BY"+req.query.column).then(function (result) {
       client.end();
       res.writeHead(200, { "Content-Type": "text/plain" });
       res.write(JSON.stringify(result.rows, null, "    ") + "\n");
@@ -91,30 +91,27 @@ module.exports = {
     });
     var fields = req.query;
     console.log(fields);
-    var columns = [];
-    var values = [];
-    for (i in fields) {
-      columns.push(i);
-      values.push(fields[i]);
-    }
-    columns = columns.join(",");
-    var VALUES = "";
-    console.log(values.length);
-    for (var i = 0; i < values.length; i++) {
-      if (i < values.length - 1) {
-        VALUES = VALUES + "'" + values[i] + "',";
+    var VALUES = "", index =1;
+    for (i  in fields) {
+      if(i !== 'id'){
+      if (index < Object.keys(fields).length - 1) {
+        VALUES += i + "=" + "'" + fields[i] + "',";
       } else {
-        VALUES = VALUES + "'" + values[i] + "'";
+        VALUES += i + "=" + "'" + fields[i] + "'";
       }
+      index++;
     }
-    var QUERYEXP =
-      "update student set (" + columns + ") = " + "(" + VALUES + ") where id="+req.query.id;
+      console.log(VALUES);
+    }
+
+    var QUERYEXP = "UPDATE STUDENT SET " + VALUES + " WHERE ID=" + req.query.id;
     console.log(QUERYEXP);
-      client.query(QUERYEXP).then(function (result) {
-        client.end();
-        res.write("Success");
-        res.end();
-      });
+    
+    client.query(QUERYEXP).then(function (result) {
+      client.end();
+      res.write("Success");
+      res.end();
+    });
   },
   delRecord: function (req, res) {
     var pg = require("pg");

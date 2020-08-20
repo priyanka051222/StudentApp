@@ -57,7 +57,7 @@
         name="btnAdd"
         class="btn btn-danger"
       >
-        Add
+        Add a row
       </button>
     </div>
   </div>
@@ -79,26 +79,27 @@
     <table class="table table-bordered table-hover table-condensed">
       <thead>
         <tr ng-if="columns.length > 0">
-          <th ng-repeat="column in columns">{{column}}</th>
+          <th ng-repeat="column in columns" ng-click="sort(column)">{{column}}
+              <span class="glyphicon sort-icon" ng-show="sortKey==column" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span></th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr
-          ng-repeat="item in dataset| filter:Filters:strict"
+            dir-paginate="item in dataset|orderBy:sortKey:reverse|filter:Filters:strict|itemsPerPage:5"
           ng-if="dataset.length > 0"
         >
           <td
             ng-class="{pass: column === 'status' && item[column].toLowerCase()=== 'pass', fail: column === 'status' && item[column].toLowerCase() === 'fail'}"
             ng-repeat="column in columns"
-            ng-if="columns.length > 0 && !updateRecord"
+            ng-if="columns.length > 0 && updateRecord !== item.id"
           >
             {{item[column]}}
           </td>
           <td
             ng-class="{pass: column === 'status' && item[column].toLowerCase()=== 'pass', fail: column === 'status' && item[column].toLowerCase() === 'fail'}"
             ng-repeat="column in columns"
-            ng-if="columns.length > 0 && updateRecord"
+            ng-if="columns.length > 0 && updateRecord === item.id"
           >
             <input
               id="{{column}}"
@@ -115,26 +116,31 @@
               title="delete this record"
               class="glyphicon glyphicon-edit text-danger"
               style="cursor: pointer;"
-              ng-click="updRecord(item.id)"
-              ng-if="!updateRecord"
+              ng-click="showUpdatingRecord(item.id, item)"
+              ng-if="updateRecord !== item.id"
             ></span>
             <span
               title="delete this record"
               class="glyphicon glyphicon-trash text-danger"
               style="cursor: pointer;"
               ng-click="delRecord(item.id)"
-              ng-if="!updateRecord"
+              ng-if="updateRecord !== item.id"
             ></span>
             <span
             title="delete this record"
             class="glyphicon glyphicon-ok text-danger"
             style="cursor: pointer;"
             ng-click="updRecord(item.id)"
-            ng-if="updateRecord"
+            ng-if="updateRecord === item.id"
           ></span>
           </td>
         </tr>
       </tbody>
     </table>
+    <dir-pagination-controls
+    max-size="5"
+    direction-links="true"
+    boundary-links="true" >
+</dir-pagination-controls>
   </div>
 </div>
