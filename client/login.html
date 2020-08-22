@@ -17,6 +17,7 @@
         <h3>Login Admin:</h3>
       </div>
     </div>
+    
     <div class="row clearfix" style="margin-bottom: 10px;">
       <div class="controls form-inline form-group">
         <div class="col-md-2">
@@ -66,13 +67,25 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="item in dataset" ng-if="dataset.length > 0">
-            <td ng-repeat="column in columns" ng-if="columns.length > 0">
+          <tr
+              dir-paginate="item in dataset|orderBy:sortKey:reverse|filter:Filters:strict|itemsPerPage:5"
+            ng-if="dataset.length > 0"
+          >
+            <td
+              ng-class="{pass: column === 'status' && item[column].toLowerCase()=== 'pass', fail: column === 'status' && item[column].toLowerCase() === 'fail'}"
+              ng-repeat="column in columns"
+              ng-if="columns.length > 0 && updateRecord !== item.id"
+            >
               {{item[column]}}
             </td>
           </tr>
         </tbody>
       </table>
+      <dir-pagination-controls
+    max-size="5"
+    direction-links="true"
+    boundary-links="true" >
+</dir-pagination-controls>
     </div>
   </div>
 </div>
